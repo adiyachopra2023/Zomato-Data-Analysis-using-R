@@ -1,0 +1,283 @@
+---
+title: "Project - Zomato"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Zomato - Data Analytics
+### Team Members:
+***
+Adiya Chopra 20BPS1163
+Mugdha Kondhare 20BPS1095
+
+## Introduction
+The basic idea of analysing the Zomato dataset is to get a fair idea about the factors affecting the establishment of different types of restaurant at different places all over the world, aggregate rating of each restaurant. With each day new restaurants opening the industry hasn't been saturated yet and the demand is increasing day by day. In Spite of increasing demand, it has become difficult for new restaurants to compete with established restaurants. Most of them serve the same food. Most of the people are dependent mainly on restaurant food as they don’t have time to cook for themselves. With such an overwhelming demand for restaurants it has therefore become important to study the demography of a location. 
+This kind of analysis can be done using the data, by studying the factors such as 
+• Location of the restaurant 
+• Approx. Price of food 
+• Restaurants and their quality of food as per public rating
+• Which locality of that city serves that cuisines with maximum number of restaurants 
+• Is a particular neighbourhood famous for its own kind of food.
+
+## Problem Statement
+Problems identified:-
+1.	 Identifying the various strategies adopted by various restaurants is a hectic task.
+2.	Analysing how Zomato is different from its competitors .
+3.	Analysing the perfect location and perfect cuisines for restaurants to open at certain places.
+4.	Analysing which food is famous in which places
+5.	Analysing relationships between restaurants, food and ratings
+To make it easier for the user to understand, all of these issues need to be resolved through proper visualisation.
+
+## Data Set Description
+The dataset contains the following features
+1.	Restaurant Id: This feature contains the Id of the restaurant on the Zomato website
+2.	Restaurant Name: The name of the restaurant
+3.	Country Code:  Code of the country
+4.	City: Contains the neighbourhood in which the restaurant is located.
+5.	Address: This feature contains the address of the restaurant in Delhi-NCR
+6.	Locality: Contains the neighbourhood in which the restaurant is located
+7.	Locality Verbose: Exact place in that locality.
+8.	Longitude: Longitude of restaurant
+9.	Latitude: Latitude of restaurant
+10.	Cuisines: Type of meal
+11.	Average Cost for Two: Average cost when two people eating
+12.	Currency: Currency of that country
+13.	Has Table Booking: Table book option available or not
+14.	Has Online Delivery: Online delivery option available
+15.	Is Delivering Now: Food delivered currently or not
+16.	Switch to Order Menu: Order menu available
+17.	Price Range: Price ranges available
+18.	Aggregate Rating: Contains the overall rating of the restaurant out of
+19.	Rating Colour: Colour of rating
+20.	Rating Text: Rating numerical value
+21.	Votes: Contains total number of upvotes for the restaurant
+
+## Analysis and Inferences
+
+***
+```{r}
+#packages
+library(dplyr)
+library(ggplot2)
+#packageVersion('rlang')
+#remove.packages('rlang')
+#install.packages('rlang')
+```
+
+***
+Reading Excel File into a variable.
+
+```{r}
+#Changing Directory to Current Working Directory
+#Reading CSV file into a variable
+zomato <- read.csv('D:/VIT/CSE3505/zomato.csv.xls')
+#zomato
+```
+
+
+***
+Cleaning dataset
+
+```{r}
+sum(is.na(zomato))
+
+#Inference: The data set is clean. It does not have any NA values.
+```
+
+***
+Describing the dataset.
+
+```{r}
+View(zomato)
+str(zomato)
+dim(zomato)
+head(zomato)
+tail(zomato)
+```
+
+***
+Summarizing the dataset.
+```{r}
+summary(zomato)
+
+#Inferences
+#The mean of average cost for two is 1199.
+#Mean price range is 1.805
+
+```
+
+***
+The most used Currency.
+```{r}
+#zomato$City
+#Substituting special characters with empty string
+zomato$Currency <- gsub("[^[:alnum:]]", "", zomato$Currency, perl=TRUE)
+zomato$Currency <- gsub("[^a-zA-Z0-9]", "", zomato$Currency, perl=TRUE)
+ggplot(zomato, aes(x=zomato$Currency, fill=zomato$Currency))+geom_bar()
+
+#Inference:
+#IndianRupees(Rs) is the most used currency among Zomato's customers
+```
+
+***
+The city to in which Zomato delivers the most
+
+```{r}
+#Substituting special characters with empty string
+zomato$City <- gsub("[^[:alnum:]]", "", zomato$City, perl=TRUE)
+zomato$City <- gsub("[^a-zA-Z0-9]", "", zomato$City, perl=TRUE)
+ggplot(zomato, aes(x=zomato$City, fill=zomato$City))+geom_bar()
+
+freq1 <- table(zomato$City)
+freq1
+barplot(freq1, xlab="City", ylab="Frequency")
+freq1[which.max(freq1)]
+freq1[which.min(freq1)]
+#Inference:
+#The maximum Zomato deliveries are made to New Delhi
+#The minimum Zomato deliveries aee made to Armidale
+boxplot(freq1)
+```
+
+***
+Plotting the longitude and latitude to visualize the various restaurants' locations collected in the dataset.  
+```{r}
+#library(ggmap)
+ggplot(zomato, aes(x=Longitude, y=Latitude))+geom_point()
+#install.packages("mapview")
+#install.packages("tidyverse")
+#install.packages("sf")
+#install.packages("terra")
+#install.packages("remotes")
+library(tidyverse)
+library(sf)
+library(mapview)
+library(terra)
+library(remotes)
+#remotes::install_github("r-spatial/mapview")
+mapview(zomato, xcol="Longitude", ycol="Latitude", crs = 4269, grid=FALSE)
+```
+
+***
+How many restaurants have table booking for dine-in.
+
+```{r}
+freq2 <- table(zomato$Has.Table.booking)
+pie(freq2, radius=1, col=c("pink", "cyan"))
+
+#Inference - Majority restaurants in this dataset don't have table bookings which increases the sales of Zomato
+```
+
+
+***
+How many restaurants have their own online delivery service
+
+```{r}
+freq6 <- table(zomato$Has.Online.delivery)
+pie(freq6 ,radius=1, col=c("cyan", "pink"))
+
+#Inference - Majority restaurants in this dataset don't have their own online delivery services which increases the customer base of Zomato
+```
+
+***
+What is the maximum and minimum average cost for two in the restaurants and the respective cities.
+
+```{r}
+maxCost <- which.max(zomato$Average.Cost.for.two)
+maxCost
+zomato$City[maxCost]
+#Inference
+#Jakarta has the maximum average cost for two i.e., Jakarta has the most expensive restaurants which offer Zomato delivery services.
+
+minCost <- which.min(zomato$Average.Cost.for.two)
+minCost
+zomato$City[minCost]
+#Inference
+#Albany has the minimum average cost for two i.e., Albany has the least expensive restaurants which offer Zomato delivery services.
+```
+
+***
+The price range pie chart
+
+```{r}
+freq3 <- table(zomato$Price.range)
+freq3
+pie(freq3, radius = 1)
+#Inference:
+#The most common price range is 1.
+```
+
+***
+Rating Text
+
+```{r}
+freq5 <- table(zomato$Rating.text)
+ggplot(zomato, aes(x=Rating.text, fill=City))+geom_bar()
+barplot(freq5, xlab="Rating Text", ylab="Frequency")
+```
+
+***
+Aggregate rating Plot
+
+```{r}
+hist(zomato$Aggregate.rating)
+```
+
+***
+Votes
+
+```{r}
+freq9 <- unique(zomato$Votes)
+hist(freq9)
+plot(zomato$Votes)
+```
+
+
+***
+Cities with average rating of services.
+
+```{r}
+restavg <- zomato %>%
+  filter(Rating.text=="Average")
+restavg
+freq7 <- unique(restavg)
+freq7
+unique(restavg$City)
+#Inference:
+#The following cities have average rated services by Zomato
+```
+
+***
+Rating vs Price Range
+
+```{r}
+ggplot(zomato, aes(x=Rating.text, fill=Price.range))+geom_bar() +ggtitle("Quality Analysis")
+
+#Inference:
+#The most common rating for Zomato services is average and the least common is poorly rated.
+```
+
+***
+Which is the most commonly ordered Cuisine?
+
+```{r}
+gsub(" ", "", zomato$Cuisines, perl=TRUE)
+#Seperating multiple comma separated cuisines in each record
+cuisines <- unlist(strsplit(zomato$Cuisines,","))
+cuisines <- gsub(" ", "", cuisines, perl=TRUE)
+unique(cuisines)
+freq9 <- table(cuisines)
+freq9
+freq9[which.max(freq9)]
+#Inference:
+#The most common cuisine is North Indian
+#The biggest customer base of Zomato services is in India.
+```
+
+
+## References
+Dataset - https://drive.google.com/file/d/1FSa_x3COvCoMODa44qXufO9CQb3ydqKw/view
+
+1.https://www.ijraset.com/research-paper/paper-on-zomato-data-analysis
+2.https://www.researchgate.net/publication/355398297_Sentiment_Analysis_of_Zomato_and_Swiggy_Food_Delivery_Management_System 
